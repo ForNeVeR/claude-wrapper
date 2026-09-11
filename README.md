@@ -4,8 +4,8 @@ SPDX-FileCopyrightText: 2024-2026 Friedrich von Never <friedrich@fornever.me>
 SPDX-License-Identifier: MIT
 -->
 
-ClaudeWrapper [![Status Zero][status-zero]][andivionian-status-classifier]
-========
+claude-wrapper [![Status Zero][status-zero]][andivionian-status-classifier]
+==============
 Wrapper executable to run Claude Code within different environments.
 
 Documentation

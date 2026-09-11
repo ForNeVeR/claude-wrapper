@@ -12,6 +12,5 @@ SPDX-License-Identifier: MIT
 
     <ItemGroup>
         <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.400" />
-        <PackageVersion Include="ChangelogAutomation.MSBuild" Version="3.0.5" />
     </ItemGroup>
 </Project>

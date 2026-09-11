@@ -53,6 +53,15 @@ $ pwsh -c "Install-Module VerifyEncoding -Repository PSGallery -RequiredVersion 
 
 The `-AutoFix` switch will automatically fix the encoding issues, and you'll only need to commit and push the changes.
 
+Publish a Release Build
+------------------------
+The release CI publishes a self-contained build per platform (RID). To reproduce one locally, run:
+```console
+$ dotnet publish ClaudeWrapper --configuration Release --runtime <rid> --self-contained --output publish/<rid>
+```
+
+Replace `<rid>` with a target platform, e.g. `win-x64`, `win-arm64`, `linux-x64`, `linux-arm64`, or `osx-arm64` (see the full list in `scripts/github-actions.fsx`). The output directory (`publish/<rid>`, git-ignored) will contain a self-contained executable together with the package files to be published.
+
 GitHub Actions
 --------------
 If you want to update the GitHub Actions used in the project, edit the file that generated them: `scripts/github-actions.fsx`.
