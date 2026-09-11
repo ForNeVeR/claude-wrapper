@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-      <PackageDescription>FVNeverDotNetTemplateDescription</PackageDescription>
+      <PackageDescription>Wrapper executable to run Claude Code within different environments.</PackageDescription>
       <IsPackable>true</IsPackable>
   </PropertyGroup>
 
