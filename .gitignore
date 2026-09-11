@@ -7,10 +7,6 @@
 /.vs/
 *.user
 
-# Generated documentation:
-/docs/_site/
-/docs/api/
-
 # Project binaries:
 bin/
 obj/

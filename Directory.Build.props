@@ -9,7 +9,6 @@ SPDX-License-Identifier: MIT
         <Version>0.0.0</Version>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <Copyright>2025-2026 Friedrich von Never &lt;friedrich@fornever.me&gt;</Copyright>
-        <PackageReadmeFile>README.md</PackageReadmeFile>
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <IncludeSymbols>true</IncludeSymbols>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
@@ -20,14 +19,6 @@ SPDX-License-Identifier: MIT
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <EmbedUntrackedSources>true</EmbedUntrackedSources>
-
-        <!-- Note that the CI will enable the AllWarningsMode. -->
-        <NoWarn Condition="$(AllWarningsMode) != 'true' or $(MSBuildProjectName.EndsWith('Tests'))">
-            CS1591; <!-- Missing XML comment for publicly visible type or member -->
-            $(NoWarn)
-        </NoWarn>
     </PropertyGroup>
 
     <PropertyGroup Condition="$(CI) != ''">
@@ -36,9 +27,8 @@ SPDX-License-Identifier: MIT
 
     <ItemGroup Condition="$(IsPackable) == 'true'">
         <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
-        <PackageReference Include="ChangelogAutomation.MSBuild" PrivateAssets="All" />
-        <None Visible="false" Include="$(MSBuildThisFileDirectory)\LICENSES\**" Pack="true" PackagePath="\LICENSES" />
-        <None Visible="false" Include="$(MSBuildThisFileDirectory)\CHANGELOG.md" Pack="true" PackagePath="\" />
-        <None Visible="false" Include="$(MSBuildThisFileDirectory)\README.md" Pack="true" PackagePath="\" />
+        <None Visible="false" Include="$(MSBuildThisFileDirectory)\LICENSES\**" Pack="true" CopyToPublishDirectory="Always" />
+        <None Visible="false" Include="$(MSBuildThisFileDirectory)\CHANGELOG.md" Pack="true" CopyToPublishDirectory="Always" />
+        <None Visible="false" Include="$(MSBuildThisFileDirectory)\README.md" Pack="true" CopyToPublishDirectory="Always" />
     </ItemGroup>
 </Project>

@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: 2024-2025 Friedrich von Never <friedrich@fornever.me>
+SPDX-FileCopyrightText: 2024-2026 Friedrich von Never <friedrich@fornever.me>
 
 SPDX-License-Identifier: MIT
 -->
@@ -26,16 +26,6 @@ Use the following shell command:
 ```console
 $ dotnet test
 ```
-
-Test Documentation
-------------------
-To open the project documentation site locally, use the following shell commands:
-```console
-$ dotnet tool restore
-$ dotnet docfx docs/docfx.json --serve
-```
-
-Then, open http://localhost:8080/ and browse the documentation.
 
 License Automation
 ------------------
