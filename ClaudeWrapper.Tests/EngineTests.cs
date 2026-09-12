@@ -29,10 +29,16 @@ public class EngineTests
 
         await engine.Run(claude, new AbsolutePath(workingDir), []);
 
-        return processRunner.LastStartInfo!.Environment.TryGetValue("CLAUDE_CONFIG_DIR", out var configDir)
+        return ConfigDirSetByEngine(processRunner.LastStartInfo!);
+    }
+
+    // ProcessStartInfo.Environment is pre-filled from the current process, which may itself run under a wrapper that
+    // has set CLAUDE_CONFIG_DIR, so only a value differing from the inherited one counts as set by the engine.
+    private static string? ConfigDirSetByEngine(ProcessStartInfo startInfo) =>
+        startInfo.Environment.TryGetValue("CLAUDE_CONFIG_DIR", out var configDir)
+        && configDir != Environment.GetEnvironmentVariable("CLAUDE_CONFIG_DIR")
             ? configDir
             : null;
-    }
 
     private sealed class FakeConsole : IConsole
     {
@@ -142,7 +148,7 @@ public class EngineTests
 
         await engine.Run(claude, workingDir, []);
 
-        await Assert.That(processRunner.LastStartInfo!.Environment.ContainsKey("CLAUDE_CONFIG_DIR")).IsFalse();
+        await Assert.That(ConfigDirSetByEngine(processRunner.LastStartInfo!)).IsNull();
     }
 
     [Test]
