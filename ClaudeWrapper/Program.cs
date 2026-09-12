@@ -2,4 +2,8 @@
 //
 // SPDX-License-Identifier: MIT
 
-return;
+using ClaudeWrapper;
+
+var configuration = await WrapperConfiguration.LoadDefault();
+var engine = new Engine(configuration);
+return engine.Run(args);
