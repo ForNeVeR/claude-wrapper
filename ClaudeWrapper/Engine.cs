@@ -18,8 +18,22 @@ public class Engine(WrapperConfiguration configuration, IConsole console, IProce
 
         foreach (var (pattern, config) in configuration.ConfigDirectoriesPerPath)
         {
+            // For the same reason, a rooted pattern has to lose its own root before being passed to the matcher;
+            // its root is instead compared to the working directory's one directly.
+            var include = pattern.Value;
+            if (Path.IsPathFullyQualified(include))
+            {
+                var patternRoot = Path.GetPathRoot(include)!;
+                if (new AbsolutePath(patternRoot) != new AbsolutePath(root))
+                {
+                    continue;
+                }
+
+                include = include[patternRoot.Length..];
+            }
+
             var matcher = new Matcher();
-            matcher.AddInclude(pattern.Value);
+            matcher.AddInclude(include);
             if (matcher.Match(root, workingDir.Value).HasMatches)
             {
                 return config;

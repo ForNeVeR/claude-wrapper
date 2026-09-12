@@ -12,6 +12,28 @@ public class EngineTests
     private static string RootedDir(string name) =>
         OperatingSystem.IsWindows() ? $"C:\\{name}" : $"/{name}";
 
+    private static string RootedPattern(string name) =>
+        RootedDir(name) + Path.DirectorySeparatorChar + "**";
+
+    private static WrapperConfiguration ConfigurationOf(string pattern, string configDir) =>
+        new(new Dictionary<LocalPathPattern, AbsolutePath>
+        {
+            [new LocalPathPattern(pattern)] = new AbsolutePath(configDir),
+        });
+
+    private static async Task<string?> RunAndGetConfigDir(WrapperConfiguration configuration, string workingDir)
+    {
+        var processRunner = new FakeProcessRunner(0);
+        var engine = new Engine(configuration, new FakeConsole(), processRunner);
+        var claude = new AbsolutePath(RootedDir("bin")) / "claude.exe";
+
+        await engine.Run(claude, new AbsolutePath(workingDir), []);
+
+        return processRunner.LastStartInfo!.Environment.TryGetValue("CLAUDE_CONFIG_DIR", out var configDir)
+            ? configDir
+            : null;
+    }
+
     private sealed class FakeConsole : IConsole
     {
         public List<string> Messages { get; } = [];
@@ -121,5 +143,55 @@ public class EngineTests
         await engine.Run(claude, workingDir, []);
 
         await Assert.That(processRunner.LastStartInfo!.Environment.ContainsKey("CLAUDE_CONFIG_DIR")).IsFalse();
+    }
+
+    [Test]
+    public async Task RootedPattern_MatchesDeeplyNestedWorkingDir()
+    {
+        var configDir = RootedDir("claude-home");
+        var workingDir = new AbsolutePath(RootedDir("Projects"))
+                         / "claude-wrapper" / "ClaudeWrapper" / "bin" / "Debug" / "net10.0";
+
+        var result = await RunAndGetConfigDir(
+            ConfigurationOf(RootedPattern("Projects"), configDir),
+            workingDir.Value);
+
+        await Assert.That(result).IsEqualTo(configDir);
+    }
+
+    [Test]
+    public async Task RootedPattern_DoesNotMatchUnrelatedDirectory()
+    {
+        var workingDir = new AbsolutePath(RootedDir("Other")) / "stuff";
+
+        var result = await RunAndGetConfigDir(
+            ConfigurationOf(RootedPattern("Projects"), RootedDir("claude-home")),
+            workingDir.Value);
+
+        await Assert.That(result).IsNull();
+    }
+
+    [Test]
+    public async Task RootedPattern_DoesNotMatchDifferentDrive()
+    {
+        if (!OperatingSystem.IsWindows()) return;
+
+        var result = await RunAndGetConfigDir(
+            ConfigurationOf("G:\\Projects\\**", RootedDir("claude-home")),
+            "C:\\Projects\\sub");
+
+        await Assert.That(result).IsNull();
+    }
+
+    [Test]
+    public async Task RootedPattern_DriveLetterCaseIsIgnored()
+    {
+        if (!OperatingSystem.IsWindows()) return;
+
+        var configDir = RootedDir("claude-home");
+
+        var result = await RunAndGetConfigDir(ConfigurationOf("g:\\Projects\\**", configDir), "G:\\Projects\\sub");
+
+        await Assert.That(result).IsEqualTo(configDir);
     }
 }
