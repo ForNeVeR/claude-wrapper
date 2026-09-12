@@ -141,6 +141,71 @@ public class ClaudeExecutableTests
     }
 
     [Test]
+    public async Task SkipsOwnDirectory_ReturnsNull()
+    {
+        var dir = RootedDir("bin");
+
+        var result = ClaudeExecutable.FindOriginal(
+            dir,
+            new ExecutableLookup.Windows(".exe"),
+            _ => true,
+            new AbsolutePath(dir));
+
+        await Assert.That(result).IsNull();
+    }
+
+    [Test]
+    public async Task SkipsOwnDirectory_FindsMatchInLaterDirectory()
+    {
+        var ownDir = RootedDir("own");
+        var otherDir = RootedDir("other");
+        var expected = new AbsolutePath(otherDir) / "claude.exe";
+
+        var result = ClaudeExecutable.FindOriginal(
+            string.Join(Path.PathSeparator, ownDir, otherDir),
+            new ExecutableLookup.Windows(".exe"),
+            _ => true,
+            new AbsolutePath(ownDir));
+
+        await Assert.That(result).IsEqualTo(expected);
+    }
+
+    [Test]
+    public async Task OwnDirectory_IsComparedPerPlatformRules()
+    {
+        // The file systems of Windows and macOS are case-insensitive by default, so a differently-cased PATH entry
+        // still points at our own directory there; on Linux it is a different directory.
+        var dir = RootedDir("bin");
+        var differentlyCased = RootedDir("BIN");
+
+        var result = ClaudeExecutable.FindOriginal(
+            differentlyCased,
+            new ExecutableLookup.Windows(".exe"),
+            _ => true,
+            new AbsolutePath(dir));
+
+        if (OperatingSystem.IsLinux())
+        {
+            await Assert.That(result).IsEqualTo(new AbsolutePath(differentlyCased) / "claude.exe");
+        }
+        else
+        {
+            await Assert.That(result).IsNull();
+        }
+    }
+
+    [Test]
+    public async Task NullOwnDirectory_SkipsNothing()
+    {
+        var dir = RootedDir("bin");
+        var expected = new AbsolutePath(dir) / "claude.exe";
+
+        var result = ClaudeExecutable.FindOriginal(dir, new ExecutableLookup.Windows(".exe"), _ => true, null);
+
+        await Assert.That(result).IsEqualTo(expected);
+    }
+
+    [Test]
     public async Task Unix_MatchesExtensionlessClaude()
     {
         var dir = RootedDir("bin");
