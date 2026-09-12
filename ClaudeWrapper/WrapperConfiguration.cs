@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Friedrich von Never <friedrich@fornever.me>
+//
+// SPDX-License-Identifier: MIT
+
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using TruePath;
