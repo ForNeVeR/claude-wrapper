@@ -11,3 +11,6 @@
 bin/
 obj/
 /publish/
+
+# Test output:
+TestResults/

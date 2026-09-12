@@ -1,18 +1,26 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using Microsoft.Extensions.FileSystemGlobbing;
 using TruePath;
 
 namespace ClaudeWrapper;
 
-public class Engine(WrapperConfiguration configuration)
+public class Engine(WrapperConfiguration configuration, IConsole console, IProcessRunner processRunner)
 {
     private AbsolutePath? FindConfigLocation(AbsolutePath workingDir)
     {
+        // The globbing matcher only ever matches paths relative to a root, so the patterns are matched against the
+        // working directory path with its root (the drive letter on Windows) stripped off.
+        var root = Path.GetPathRoot(workingDir.Value);
+        if (root == null)
+        {
+            throw new Exception($"Cannot determine root for directory \"{workingDir.Value}\".");
+        }
+
         foreach (var (pattern, config) in configuration.ConfigDirectoriesPerPath)
         {
             var matcher = new Matcher();
             matcher.AddInclude(pattern.Value);
-            if (matcher.Match(workingDir.Value).HasMatches)
+            if (matcher.Match(root, workingDir.Value).HasMatches)
             {
                 return config;
             }
@@ -21,29 +29,24 @@ public class Engine(WrapperConfiguration configuration)
         return null;
     }
 
-    public async Task<int> Run(AbsolutePath workingDir, IEnumerable<string> args)
+    public async Task<int> Run(AbsolutePath? claudeExecutable, AbsolutePath workingDir, IReadOnlyList<string> args)
     {
-        var mainClaudeLocation = ClaudeExecutable.FindOriginal(
-            Environment.GetEnvironmentVariable("PATH") ?? "",
-            Environment.GetEnvironmentVariable("PATHEXT")
-        );
-        if (mainClaudeLocation is not { } claude)
+        if (claudeExecutable is not { } claude)
         {
-            Console.WriteLine("Cannot find the main Claude Code executable.");
+            console.WriteLine("Cannot find the main Claude Code executable.");
             return 1;
         }
 
         var psi = new ProcessStartInfo(claude.Value, args);
         if (FindConfigLocation(workingDir) is {} location)
             psi.Environment["CLAUDE_CONFIG_DIR"] = location.Value;
-        using var process = Process.Start(psi);
-        if (process is null)
+        var exitCode = await processRunner.RunAsync(psi);
+        if (exitCode is null)
         {
-            Console.WriteLine($"Cannot start \"{claude.Value}\".");
+            console.WriteLine($"Cannot start \"{claude.Value}\".");
             return 2;
         }
 
-        await process.WaitForExitAsync();
-        return process.ExitCode;
+        return exitCode.Value;
     }
 }

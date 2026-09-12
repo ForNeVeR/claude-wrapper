@@ -32,4 +32,5 @@
     <File Path="global.json.license" />
   </Folder>
   <Project Path="ClaudeWrapper\ClaudeWrapper.csproj" />
+  <Project Path="ClaudeWrapper.Tests\ClaudeWrapper.Tests.csproj" />
 </Solution>
