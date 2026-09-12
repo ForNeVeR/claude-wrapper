@@ -21,14 +21,21 @@ jobs:
   publish:
     strategy:
       matrix:
-        rid:
-        - win-x64
-        - win-arm64
-        - linux-x64
-        - linux-arm64
-        - osx-arm64
+        include:
+        - image: windows-2025
+          rid: win-x64
+        - image: windows-11-arm
+          rid: win-arm64
+        - image: ubuntu-24.04
+          rid: linux-x64
+        - image: ubuntu-24.04-arm
+          rid: linux-arm64
+        - image: macos-26
+          rid: osx-arm64
+        - image: macos-26
+          rid: osx-x64
       fail-fast: false
-    runs-on: ubuntu-24.04
+    runs-on: ${{ matrix.image }}
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
       DOTNET_NOLOGO: 1
@@ -48,9 +55,13 @@ jobs:
       shell: pwsh
       run: echo "version=$(scripts/Get-Version.ps1 -RefName $env:GITHUB_REF)" >> $env:GITHUB_OUTPUT
     - name: Publish
-      run: dotnet publish ClaudeWrapper --configuration Release --runtime ${{ matrix.rid }} --self-contained -p:Version=${{ steps.version.outputs.version }} --output publish/${{ matrix.rid }}
+      run: dotnet publish ClaudeWrapper --configuration Release --runtime ${{ matrix.rid }} -p:Version=${{ steps.version.outputs.version }} --output publish/${{ matrix.rid }}
     - name: Archive the published output
-      run: cd publish/${{ matrix.rid }} && zip -r ../../ClaudeWrapper.${{ steps.version.outputs.version }}.${{ matrix.rid }}.zip . && cd ../..
+      shell: pwsh
+      run: Add-Type -AssemblyName System.IO.Compression.FileSystem; [IO.Compression.ZipFile]::CreateFromDirectory("$PWD/publish/${{ matrix.rid }}", "$PWD/ClaudeWrapper.${{ steps.version.outputs.version }}.${{ matrix.rid }}.zip")
+    - if: runner.os != 'Windows'
+      name: Verify the archive
+      run: unzip -Z ClaudeWrapper.${{ steps.version.outputs.version }}.${{ matrix.rid }}.zip && unzip -Z ClaudeWrapper.${{ steps.version.outputs.version }}.${{ matrix.rid }}.zip claude | grep -q '^-rwx' && file publish/${{ matrix.rid }}/claude
     - name: Upload artifacts
       uses: actions/upload-artifact@v7
       with:
