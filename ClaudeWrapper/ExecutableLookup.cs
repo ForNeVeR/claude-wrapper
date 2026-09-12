@@ -24,7 +24,7 @@ public abstract class ExecutableLookup
     public sealed class Windows(string? pathExt) : ExecutableLookup
     {
         public override IEnumerable<LocalPath> GetCandidates(LocalPath command) =>
-            (pathExt?.Split(Path.PathSeparator) ?? []).Select(ext => command.WithExtension(ext));
+            (pathExt?.Split(';') ?? []).Select(ext => command.WithExtension(ext));
     }
 
     /// <summary>On Unix, a command name resolves to the extension-less file itself; there's no <c>PATHEXT</c>.</summary>
