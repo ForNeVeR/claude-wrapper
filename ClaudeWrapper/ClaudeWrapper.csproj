@@ -15,6 +15,17 @@ SPDX-License-Identifier: MIT
     <RootNamespace>ClaudeWrapper</RootNamespace>
   </PropertyGroup>
 
+  <PropertyGroup Label="Publishing">
+    <PublishAot>true</PublishAot>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <CopyOutputSymbolsToPublishDirectory>false</CopyOutputSymbolsToPublishDirectory>
+  </PropertyGroup>
+
+  <ItemGroup Label="Publishing">
+    <None Visible="false" Include="..\LICENSE.txt" Link="LICENSE.txt" CopyToPublishDirectory="PreserveNewest" />
+    <None Visible="false" Include="..\README.md" Link="README.md" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
     <PackageReference Include="TruePath" />

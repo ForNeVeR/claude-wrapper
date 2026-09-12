@@ -127,12 +127,14 @@ let workflows = [
         ]
     ]
 
-    let releaseRids = [
-        "win-x64"
-        "win-arm64"
-        "linux-x64"
-        "linux-arm64"
-        "osx-arm64"
+    // Native AOT cannot cross-compile between operating systems, so every RID should be built on a runner of its OS.
+    let releaseTargets = [
+        "win-x64", "windows-2025"
+        "win-arm64", "windows-11-arm"
+        "linux-x64", "ubuntu-24.04"
+        "linux-arm64", "ubuntu-24.04-arm"
+        "osx-arm64", "macos-26"
+        "osx-x64", "macos-26" // cross-architecture compilation is supported on macOS
     ]
 
     let getVersionStep = step(
@@ -149,17 +151,23 @@ let workflows = [
 
         dotNetJob "publish" [
             strategy(failFast = false, matrix = [
-                "rid", releaseRids
+                "include", box (releaseTargets |> List.map (fun (rid, image) -> Map.ofList [ "rid", rid; "image", image ]))
             ])
-            runsOn "ubuntu-24.04"
+            runsOn "${{ matrix.image }}"
             getVersionStep
             step(
                 name = "Publish",
-                run = "dotnet publish ClaudeWrapper --configuration Release --runtime ${{ matrix.rid }} --self-contained -p:Version=${{ steps.version.outputs.version }} --output publish/${{ matrix.rid }}"
+                run = "dotnet publish ClaudeWrapper --configuration Release --runtime ${{ matrix.rid }} -p:Version=${{ steps.version.outputs.version }} --output publish/${{ matrix.rid }}"
             )
             step(
                 name = "Archive the published output",
-                run = "cd publish/${{ matrix.rid }} && zip -r ../../ClaudeWrapper.${{ steps.version.outputs.version }}.${{ matrix.rid }}.zip . && cd ../.."
+                shell = "pwsh",
+                run = "Add-Type -AssemblyName System.IO.Compression.FileSystem; [IO.Compression.ZipFile]::CreateFromDirectory(\"$PWD/publish/${{ matrix.rid }}\", \"$PWD/ClaudeWrapper.${{ steps.version.outputs.version }}.${{ matrix.rid }}.zip\")"
+            )
+            step(
+                name = "Verify the archive",
+                condition = "runner.os != 'Windows'",
+                run = "unzip -Z ClaudeWrapper.${{ steps.version.outputs.version }}.${{ matrix.rid }}.zip && unzip -Z ClaudeWrapper.${{ steps.version.outputs.version }}.${{ matrix.rid }}.zip claude | grep -q '^-rwx' && file publish/${{ matrix.rid }}/claude"
             )
             step(
                 name = "Upload artifacts",

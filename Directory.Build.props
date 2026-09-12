@@ -24,8 +24,8 @@ SPDX-License-Identifier: MIT
 
     <ItemGroup Condition="$(IsPackable) == 'true'">
         <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
-        <None Visible="false" Include="$(MSBuildThisFileDirectory)\LICENSES\**" Pack="true" CopyToPublishDirectory="Always" />
-        <None Visible="false" Include="$(MSBuildThisFileDirectory)\CHANGELOG.md" Pack="true" CopyToPublishDirectory="Always" />
-        <None Visible="false" Include="$(MSBuildThisFileDirectory)\README.md" Pack="true" CopyToPublishDirectory="Always" />
+        <None Visible="false" Include="$(MSBuildThisFileDirectory)\LICENSES\**" Pack="true" />
+        <None Visible="false" Include="$(MSBuildThisFileDirectory)\CHANGELOG.md" Pack="true" />
+        <None Visible="false" Include="$(MSBuildThisFileDirectory)\README.md" Pack="true" />
     </ItemGroup>
 </Project>
