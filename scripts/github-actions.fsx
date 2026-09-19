@@ -58,7 +58,7 @@ let workflows = [
         yield! mainTriggers
 
         dotNetJob "verify-workflows" [
-            runsOn "ubuntu-24.04"
+            runsOn "ubuntu-26.04"
             step(run = "dotnet fsi ./scripts/github-actions.fsx verify")
         ]
 
@@ -66,8 +66,8 @@ let workflows = [
             strategy(failFast = false, matrix = [
                 "image", [
                     "macos-26"
-                    "ubuntu-24.04"
-                    "ubuntu-24.04-arm"
+                    "ubuntu-26.04"
+                    "ubuntu-26.04-arm"
                     "windows-11-arm"
                     "windows-2025"
                 ]
@@ -86,7 +86,7 @@ let workflows = [
         ]
 
         job "licenses" [
-            runsOn "ubuntu-24.04"
+            runsOn "ubuntu-26.04"
             step(
                 name = "Check out the sources",
                 usesSpec = Auto "actions/checkout"
@@ -98,7 +98,7 @@ let workflows = [
         ]
 
         job "encoding" [
-            runsOn "ubuntu-24.04"
+            runsOn "ubuntu-26.04"
             step(
                 name = "Check out the sources",
                 usesSpec = Auto "actions/checkout"
@@ -111,7 +111,7 @@ let workflows = [
         ]
 
         job "todos" [
-            runsOn "ubuntu-24.04"
+            runsOn "ubuntu-26.04"
             step(
                 name = "Check out the sources",
                 usesSpec = Auto "actions/checkout"
@@ -131,8 +131,8 @@ let workflows = [
     let releaseTargets = [
         "win-x64", "windows-2025"
         "win-arm64", "windows-11-arm"
-        "linux-x64", "ubuntu-24.04"
-        "linux-arm64", "ubuntu-24.04-arm"
+        "linux-x64", "ubuntu-26.04"
+        "linux-arm64", "ubuntu-26.04-arm"
         "osx-arm64", "macos-26"
         "osx-x64", "macos-26" // cross-architecture compilation is supported on macOS
     ]
@@ -182,7 +182,7 @@ let workflows = [
         job "release" [
             needs "publish"
             jobPermission(PermissionKind.Contents, AccessKind.Write)
-            runsOn "ubuntu-24.04"
+            runsOn "ubuntu-26.04"
             step(
                 name = "Check out the sources",
                 usesSpec = Auto "actions/checkout"
